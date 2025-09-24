@@ -39,4 +39,15 @@
 
   "refresh_hours": 3,
   "daily_reboot_time": "00:00"
-}
+,
+  "holiday": {
+    "provider": "nager",
+    "country_code": "BD",
+    "calendarific": {
+      "api_key": ""
+    },
+    "ics": {
+      "url": "https://calendar.google.com/calendar/ical/en.bd.official%23holiday%40group.v.calendar.google.com/public/basic.ics"
+    },
+    "treat_observances_as_holiday": true
+  }}

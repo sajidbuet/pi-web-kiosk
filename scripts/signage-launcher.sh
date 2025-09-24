@@ -63,6 +63,13 @@ HDMI2_MODE="$(req '.layout.hdmi2.mode')"
 HDMI2_POS="$(req '.layout.hdmi2.pos')"
 HDMI2_RIGHT_OF="$(opt '.layout.hdmi2.right_of')"
 
+# Holiday config
+HOL_PROVIDER="$(opt '.holiday.provider')"; HOL_PROVIDER="${HOL_PROVIDER:-none}"
+HOL_COUNTRY="$(opt '.holiday.country_code')"; HOL_COUNTRY="${HOL_COUNTRY:-BD}"
+HOL_CAL_APIKEY="$(opt '.holiday.calendarific.api_key')"
+HOL_ICS_URL="$(opt '.holiday.ics.url')"
+HOL_TREAT_OBS="$(opt '.holiday.treat_observances_as_holiday')"; HOL_TREAT_OBS="${HOL_TREAT_OBS:-true}"
+
 # ==== ENV / LOGGING ====
 export DISPLAY="$DISPLAY_VAL"
 
@@ -169,7 +176,7 @@ check_status() {
     else
       echo "$TS [$out] status unknown"
     fi
-  end
+  fi
 }
 
 launch_chromium_if_needed() {
@@ -270,6 +277,57 @@ maybe_hourly_status() {
   fi
 }
 
+today_iso() { date +%F; }          # 2025-09-24
+today_yyyymmdd() { date +%Y%m%d; } # 20250924
+
+is_holiday_today_nager() {
+  local year country today json
+  year="$(date +%Y)"
+  country="${HOL_COUNTRY:-BD}"
+  today="$(today_iso)"
+  json="$(curl -fsS "https://date.nager.at/api/v3/PublicHolidays/${year}/${country}" || true)"
+  [[ -z "$json" ]] && return 1
+  if command jq -e --arg d "$today" '.[] | select(.date == $d)' >/dev/null 2>&1 <<<"$json"; then
+    return 0
+  fi
+  return 1
+}
+
+is_holiday_today_calendarific() {
+  [[ -z "$HOL_CAL_APIKEY" ]] && return 1
+  local country year month day json
+  country="${HOL_COUNTRY:-BD}"
+  year="$(date +%Y)"; month="$(date +%m)"; day="$(date +%d)"
+  json="$(curl -fsS "https://calendarific.com/api/v2/holidays?api_key=${HOL_CAL_APIKEY}&country=${country}&year=${year}&month=${month}&day=${day}" || true)"
+  [[ -z "$json" ]] && return 1
+  if $HOL_TREAT_OBS; then
+    command jq -e '.response.holidays | length > 0' >/dev/null 2>&1 <<<"$json"
+  else
+    command jq -e '[.response.holidays[] | select(.type[] | ascii_downcase == "national")] | length > 0' >/dev/null 2>&1 <<<"$json"
+  fi
+}
+
+is_holiday_today_ics() {
+  [[ -z "$HOL_ICS_URL" ]] && return 1
+  local ymd ics
+  ymd="$(today_yyyymmdd)"
+  ics="$(curl -fsS "$HOL_ICS_URL" || true)"
+  [[ -z "$ics" ]] && return 1
+  if grep -q "DTSTART.*:${ymd}" <<<"$ics"; then
+    return 0
+  fi
+  return 1
+}
+
+is_public_holiday_today() {
+  case "${HOL_PROVIDER,,}" in
+    nager)         is_holiday_today_nager && return 0 || return 1 ;;
+    calendarific)  is_holiday_today_calendarific && return 0 || return 1 ;;
+    ics)           is_holiday_today_ics && return 0 || return 1 ;;
+    ""|none|*)     return 1 ;;
+  esac
+}
+
 # ==== STARTUP ====
 echo "[$(date)] LAUNCH pid=$$ ppid=$PPID user=$(whoami)"
 bootstrap_cache
@@ -284,10 +342,20 @@ while true; do
   maybe_periodic_refresh
   maybe_hourly_status
 
-  if in_schedule; then
-    turn_on_monitors
-  else
+  HOL=false
+  if is_public_holiday_today; then
+    echo "[$(date)] Holiday detected by provider=$HOL_PROVIDER (country=$HOL_COUNTRY) – forcing displays OFF."
+    HOL=true
+  fi
+
+  if $HOL; then
     turn_off_monitors
+  else
+    if in_schedule; then
+      turn_on_monitors
+    else
+      turn_off_monitors
+    fi
   fi
 
   sleep 60
