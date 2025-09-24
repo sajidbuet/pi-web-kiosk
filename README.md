@@ -6,7 +6,7 @@ Dual-monitor Raspberry Pi web kiosk with offline cache, live failover, periodic 
 
 ## Demo
 The kiosk is used in [Department of Electrical and Electronic Engineering, BUET](https://eee.buet.ac.bd) 's main lobby.
-[![Pi Web Kiosk demo](assets/thumb.png)](assets/demo.png)
+[![Pi Web Kiosk demo](assets/demo.jpg)](assets/demo.jpg)
 
 ## Overview
 **Pi Web Kiosk** is a config-driven digital signage solution for Raspberry Pi. It launches two Chromium windows in kiosk mode across two HDMI displays. When the network is slow or offline, it serves content from a pre‑mirrored **offline cache** and switches back to the live site as soon as it’s reachable. Scheduled **hard refreshes**, a daily **auto‑reboot**, and **systemd** integration provide hands‑off reliability — all controlled via a single `config.json`.
