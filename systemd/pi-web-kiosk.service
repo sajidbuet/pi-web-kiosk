@@ -1,0 +1,20 @@
+[Unit]
+Description=Pi Web Kiosk (Dual Monitor)
+After=network-online.target graphical.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=bueteee123
+Group=bueteee123
+Environment=DISPLAY=:0
+WorkingDirectory=/opt/pi-web-kiosk
+ExecStart=/usr/bin/bash /opt/pi-web-kiosk/scripts/signage-launcher.sh /etc/pi-web-kiosk/config.json
+Restart=always
+RestartSec=5
+
+# If X session auth is required, uncomment:
+# Environment=XAUTHORITY=/home/bueteee123/.Xauthority
+
+[Install]
+WantedBy=graphical.target

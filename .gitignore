@@ -1,0 +1,6 @@
+# local configs/logs/offline mirrors
+config/config.json
+*.log
+offline/
+*.lock
+tmp/

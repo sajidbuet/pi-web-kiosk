@@ -1,0 +1,42 @@
+{
+  "display": ":0",
+
+  "urls": [
+    "https://eee.buet.ac.bd/people/faculty-slideshow/",
+    "https://eee.buet.ac.bd/about/event-showcase/"
+  ],
+
+  "offline_cache": [
+    "/home/bueteee123/signage-system/offline/faculty-slideshow/eee.buet.ac.bd/people/faculty-slideshow/index.html",
+    "/home/bueteee123/signage-system/offline/event-showcase/eee.buet.ac.bd/about/event-showcase/index.html"
+  ],
+
+  "outputs": {
+    "hdmi1": "HDMI-1",
+    "hdmi2": "HDMI-2"
+  },
+
+  "layout": {
+    "hdmi1": { "mode": "1920x1080", "pos": "0x0", "primary": true },
+    "hdmi2": { "mode": "1920x1080", "pos": "1920x0", "right_of": "HDMI-1" }
+  },
+
+  "chromium": {
+    "binary": "/usr/bin/chromium-browser",
+    "profile1": "/tmp/profile1",
+    "profile2": "/tmp/profile2",
+    "window1": { "size": "1920,1080", "position": "0,0", "remote_debug_port": 9222 },
+    "window2": { "size": "1920,1080", "position": "1920,0", "remote_debug_port": 9223 }
+  },
+
+  "log_file": "/home/bueteee123/signage-system/signage.log",
+
+  "schedule": {
+    "start_hour": 8,
+    "end_hour": 17,
+    "active_days": [1, 2, 3, 6, 7]
+  },
+
+  "refresh_hours": 3,
+  "daily_reboot_time": "00:00"
+}
